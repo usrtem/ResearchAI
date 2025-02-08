@@ -120,6 +120,7 @@ It's highly recommended to use a virtual environment to manage dependencies for 
 3.  Press `Enter` or click the appropriate button to get the answer.
 4.  Use the "Upload Document" button to add more documents to the DOCS directory.
 5.  Click "EXIT" to close the application.
+6.  IF you update the documents in the directory while the script is running, you will need to click "RESTART" prior to asking questions on the newly added/modified documents. 
 
 ## Contributing
 

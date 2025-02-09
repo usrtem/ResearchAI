@@ -13,6 +13,7 @@ import validators
 import random
 import time
 import openpyxl  # Import openpyxl
+import traceback  # Import traceback for detailed error messages
 
 # Function to get the API key from the environment variable
 def get_api_key():
@@ -25,12 +26,17 @@ def get_api_key():
 # Configure the API key
 try:
     genai.configure(api_key=get_api_key())
+    print("API key configured successfully.")  # Confirmation message
 except ValueError as e:
     print(f"Error configuring API key: {e}")
+    exit()
+except Exception as e:  # Catch any other potential configuration issues
+    print(f"An unexpected error occurred during API key configuration: {e}")
     exit()
 
 # Create a model
 model = genai.GenerativeModel('gemini-2.0-flash')
+print(f"Model initialized: {model}") # Verify the model is initialized
 
 # Specify the directory path
 docs_dir = r'C:\Scripts\DOCS'
@@ -46,6 +52,7 @@ def read_document_contents(directory):
                 with open(filepath, 'r', encoding='utf-8') as file:
                     content = file.read()
                     document_contents.append(content)
+                print(f"Read .txt file: {filename}")  # Added
             except Exception as e:
                 print(f"Error reading {filename}: {e}")
 
@@ -54,6 +61,7 @@ def read_document_contents(directory):
                 doc = docx.Document(filepath)
                 content = "\n".join([paragraph.text for paragraph in doc.paragraphs])
                 document_contents.append(content)
+                print(f"Read .docx file: {filename}")  # Added
             except Exception as e:
                 print(f"Error reading {filename}: {e}")
 
@@ -62,27 +70,38 @@ def read_document_contents(directory):
                 pdf_reader = PdfReader(filepath)
                 content = "\n".join([page.extract_text() for page in pdf_reader.pages])
                 document_contents.append(content)
+                print(f"Read .pdf file: {filename}")  # Added
             except Exception as e:
                 print(f"Error reading {filename}: {e}")
 
         elif filename.endswith(".xlsx"):  # For .xlsx files
             try:
+                print(f"Attempting to read Excel file: {filepath}")  # Added
                 workbook = openpyxl.load_workbook(filepath)
+                print(f"Excel file {filename} loaded successfully.")  # Added
                 content = ""
-                for sheet_name in workbook.sheetnames:  # Iterate through all sheets
+                for sheet_name in workbook.sheetnames:
+                    print(f"Processing sheet: {sheet_name}")  # Added
                     sheet = workbook[sheet_name]
                     for row in sheet.iter_rows():
-                        cell_values = [str(cell.value) for cell in row if cell.value is not None]  # Handle None values
-                        content += ", ".join(cell_values) + "\n"  # Join cells in a row with commas
+                        cell_values = [str(cell.value) for cell in row if cell.value is not None]
+                        content += ", ".join(cell_values) + "\n"
 
                 document_contents.append(content)
+                print(f"Content read from Excel: {content[:200]}...")  # Show first 200 characters
+
+            except FileNotFoundError:  # Added specific exception handling
+                print("Error: Excel file not found.")
+            except openpyxl.utils.exceptions.InvalidFileException:  # Added specific exception handling
+                print("Error: Invalid Excel file format.")
             except Exception as e:
-                print(f"Error reading {filename}: {e}")
+                print(f"An unexpected error occurred while reading {filename}: {e}")
+                traceback.print_exc()  # Print the traceback
 
         else:
             print(f"Unsupported file type: {filename}")
 
-        return document_contents
+    return document_contents
 
 # User-Agent strings to rotate
 user_agents = [
@@ -135,13 +154,17 @@ def generate_answer(query, document_contents, url_content=None):
         combined_content += f"\n\nContent from URL:\n{url_content}"
 
     #Let the AI use the provided content to answer the question
-    prompt = f"{query}\n\n{combined_content}"
+    prompt = f"{query}\n\nUse the following document content to answer the question:\n{combined_content}"  # Improved prompt
+
+    print("DEBUG: Full prompt being sent to the AI:") # Added line
+    print(prompt)                                      # Added line
 
     try:
         response = model.generate_content(prompt)
+        print(f"DEBUG: Response received. Type: {type(response)}")
         return response.text
     except Exception as e:
-        print(f"An error occurred: {e}")
+        print(f"An error occurred in generate_answer: {e}")
         return "Failed to generate answer."
 
 class App:
@@ -149,6 +172,12 @@ class App:
         self.root = root
         self.root.title("Mike's AI Research Assistant")
         self.document_contents = read_document_contents(docs_dir)
+
+        print("DEBUG: Contents of document_contents in App.__init__:")
+        for i, content in enumerate(self.document_contents):
+            print(f"  Document {i+1}: {content[:200]}...")
+        if not self.document_contents:
+            print("WARNING: document_contents is empty!")
 
         self.text_area = scrolledtext.ScrolledText(root, wrap=tk.WORD, width=80, height=20)
         self.text_area.pack(pady=10, padx=10, fill=tk.BOTH, expand=True)
@@ -171,6 +200,7 @@ class App:
 
     def ask_question(self, event=None):
         query = self.query_entry.get().strip()
+        print(f"DEBUG: Query received: {query}")  # Added
 
         # Check if the query is a URL
         if validators.url(query):
@@ -185,6 +215,7 @@ class App:
             self.display_text(f"Question: {query}\n")
             answer = generate_answer(query, self.document_contents)
 
+        print(f"DEBUG: Answer received: {answer[:100]}...")  # Print first 100 chars of answer
         self.display_text(f"Answer: {answer}" + "\n\n" + "-"*50 + "\n")
         self.query_entry.delete(0, tk.END)  # Clear the entry
 

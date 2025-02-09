@@ -17,7 +17,7 @@ Before you begin, ensure you have the following installed:
 
 2.  **Clone the Repository:**
     ```
-    git clone [<repository_url>](https://github.com/usrtem/ResearchAI.git)
+    git clone https://github.com/usrtem/ResearchAI.git
     cd <repository_directory>
     ```
     Replace `<repository_directory>` with the name of the directory.

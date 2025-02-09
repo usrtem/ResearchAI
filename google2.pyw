@@ -12,6 +12,7 @@ from bs4 import BeautifulSoup
 import validators
 import random
 import time
+import openpyxl  # Import openpyxl
 
 # Function to get the API key from the environment variable
 def get_api_key():
@@ -39,7 +40,7 @@ def read_document_contents(directory):
     document_contents = []
     for filename in os.listdir(directory):
         filepath = os.path.join(directory, filename)
-        
+
         if filename.endswith(".txt"):  # For .txt files
             try:
                 with open(filepath, 'r', encoding='utf-8') as file:
@@ -47,7 +48,7 @@ def read_document_contents(directory):
                     document_contents.append(content)
             except Exception as e:
                 print(f"Error reading {filename}: {e}")
-                
+
         elif filename.endswith(".docx"):  # For .docx files
             try:
                 doc = docx.Document(filepath)
@@ -55,7 +56,7 @@ def read_document_contents(directory):
                 document_contents.append(content)
             except Exception as e:
                 print(f"Error reading {filename}: {e}")
-                
+
         elif filename.endswith(".pdf"):  # For .pdf files
             try:
                 pdf_reader = PdfReader(filepath)
@@ -63,11 +64,25 @@ def read_document_contents(directory):
                 document_contents.append(content)
             except Exception as e:
                 print(f"Error reading {filename}: {e}")
-                
+
+        elif filename.endswith(".xlsx"):  # For .xlsx files
+            try:
+                workbook = openpyxl.load_workbook(filepath)
+                content = ""
+                for sheet_name in workbook.sheetnames:  # Iterate through all sheets
+                    sheet = workbook[sheet_name]
+                    for row in sheet.iter_rows():
+                        cell_values = [str(cell.value) for cell in row if cell.value is not None]  # Handle None values
+                        content += ", ".join(cell_values) + "\n"  # Join cells in a row with commas
+
+                document_contents.append(content)
+            except Exception as e:
+                print(f"Error reading {filename}: {e}")
+
         else:
             print(f"Unsupported file type: {filename}")
-    
-    return document_contents
+
+        return document_contents
 
 # User-Agent strings to rotate
 user_agents = [
@@ -115,13 +130,13 @@ def fetch_and_extract_text_from_url(url):
 def generate_answer(query, document_contents, url_content=None):
     """Generates an answer based on the query, document contents, and URL content."""
     combined_content = "\n\n".join(document_contents)
-    
+
     if url_content:
         combined_content += f"\n\nContent from URL:\n{url_content}"
-    
+
     #Let the AI use the provided content to answer the question
     prompt = f"{query}\n\n{combined_content}"
-    
+
     try:
         response = model.generate_content(prompt)
         return response.text
@@ -150,13 +165,13 @@ class App:
 
         self.exit_button = tk.Button(root, text="EXIT", command=self.root.destroy)
         self.exit_button.pack(pady=5)
-        
+
         self.restart_button = tk.Button(root, text="RESTART", command=self.restart)
         self.restart_button.pack(pady=5)
 
     def ask_question(self, event=None):
         query = self.query_entry.get().strip()
-        
+
         # Check if the query is a URL
         if validators.url(query):
             self.display_text(f"Question: {query}\n")
@@ -169,7 +184,7 @@ class App:
         else:
             self.display_text(f"Question: {query}\n")
             answer = generate_answer(query, self.document_contents)
-            
+
         self.display_text(f"Answer: {answer}" + "\n\n" + "-"*50 + "\n")
         self.query_entry.delete(0, tk.END)  # Clear the entry
 
@@ -199,7 +214,6 @@ class App:
         root = tk.Tk()
         app = App(root)
         root.mainloop()
-
 
 def main():
     hide_console_window()  # Hide the console window

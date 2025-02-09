@@ -46,11 +46,12 @@ It's highly recommended to use a virtual environment to manage dependencies for 
 
 1.  **Install Required Packages:**
     ```
-    pip install python-docx PyPDF2 google-generativeai tkinter beautifulsoup4 requests validators
+    pip install python-docx PyPDF2 google-generativeai tkinter beautifulsoup4 requests validators openpyxl
     ```
     This command installs the necessary Python packages, including:
     *   `python-docx`: For reading `.docx` files.
     *   `PyPDF2`: For reading `.pdf` files.
+    *   `openpyxl`: For reading `.xlsx` files.
     *   `google-generativeai`: For accessing the Gemini API.
     *   `tkinter`: For the GUI.
     *   `beautifulsoup4`: For web scraping.
@@ -120,7 +121,8 @@ It's highly recommended to use a virtual environment to manage dependencies for 
 3.  Press `Enter` or click the appropriate button to get the answer.
 4.  Use the "Upload Document" button to add more documents to the DOCS directory.
 5.  Click "EXIT" to close the application.
-6.  IF you update the documents in the directory while the script is running, you will need to click "RESTART" prior to asking questions on the newly added/modified documents. 
+6.  IF you update the documents in the directory while the script is running, you will need to click "RESTART" prior to asking questions on the newly added/modified documents.
+7.  IF you are using .xlsx files, ensure that cell data are formatted before performing analysis. For example, in order for the AI to perform math functions, the data cannot be in string format.
 
 ## Contributing
 

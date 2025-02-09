@@ -17,10 +17,10 @@ Before you begin, ensure you have the following installed:
 
 2.  **Clone the Repository:**
     ```
-    git clone <repository_url>
+    git clone [<repository_url>](https://github.com/usrtem/ResearchAI.git)
     cd <repository_directory>
     ```
-    Replace `<repository_url>` with the actual URL of your GitHub repository and `<repository_directory>` with the name of the directory.
+    Replace `<repository_directory>` with the name of the directory.
 
 ## Step 2: Setting Up a Virtual Environment
 

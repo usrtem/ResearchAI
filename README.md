@@ -1,5 +1,5 @@
 # ResearchAI
-Homemade AI
+Homemade AI, this will require some configuration to work for you!
 # AI Research Assistant Setup Guide
 
 This document provides a step-by-step guide to setting up and running the AI Research Assistant on your local machine.
